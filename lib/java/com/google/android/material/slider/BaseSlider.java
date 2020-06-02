@@ -1860,6 +1860,13 @@ abstract class BaseSlider<
           }
           return true;
         }
+        if (keyCode == KeyEvent.KEYCODE_TAB) {
+          if (event.hasNoModifiers()) {
+            return moveFocus(1);
+          } else if (event.isShiftPressed()) {
+            return moveFocus(-1);
+          }
+        }
       }
     }
 
