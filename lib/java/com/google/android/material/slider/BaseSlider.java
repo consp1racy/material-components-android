@@ -1959,7 +1959,24 @@ abstract class BaseSlider<
       }
       accessibilityHelper.clearKeyboardFocusForVirtualView(focusedThumbIdx);
     } else {
+      focusThumbOnFocusGained(direction);
       accessibilityHelper.requestKeyboardFocusForVirtualView(focusedThumbIdx);
+    }
+  }
+
+  private void focusThumbOnFocusGained(int direction) {
+    switch(direction) {
+      case FOCUS_BACKWARD:
+      case FOCUS_LEFT:
+        moveFocus(Integer.MAX_VALUE);
+        break;
+      case FOCUS_FORWARD:
+      case FOCUS_RIGHT:
+        moveFocus(Integer.MIN_VALUE);
+        break;
+      case FOCUS_UP:
+      case FOCUS_DOWN:
+        // Don't make assumptions about where exactly focus came from. Use previously focused thumb.
     }
   }
 
