@@ -1850,7 +1850,7 @@ abstract class BaseSlider<
         }
       } else {
         isLongPress |= event.isLongPress();
-        Float increment = calculateIncrementForKey(event, keyCode);
+        Float increment = calculateIncrementForKey(keyCode);
         if (increment != null) {
           if (ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_RTL) {
             increment = -increment;
@@ -1885,21 +1885,14 @@ abstract class BaseSlider<
     postInvalidate();
   }
 
-  private Float calculateIncrementForKey(KeyEvent event, int keyCode) {
+  private Float calculateIncrementForKey(int keyCode) {
     // If this is a long press, increase the increment so it will only take around 20 steps.
     // Otherwise choose the smallest valid increment.
     float increment = isLongPress ? calculateStepIncrement(20) : calculateStepIncrement();
     switch (keyCode) {
-      case KeyEvent.KEYCODE_TAB:
-        if (event.isShiftPressed()) {
-          return -increment;
-        } else {
-          return increment;
-        }
       case KeyEvent.KEYCODE_DPAD_LEFT:
       case KeyEvent.KEYCODE_MINUS:
-        increment = -increment;
-        // fallthrough
+        return -increment;
       case KeyEvent.KEYCODE_DPAD_RIGHT:
       case KeyEvent.KEYCODE_PLUS:
       case KeyEvent.KEYCODE_EQUALS:
