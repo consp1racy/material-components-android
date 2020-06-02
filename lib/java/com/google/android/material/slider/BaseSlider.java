@@ -1362,7 +1362,7 @@ abstract class BaseSlider<
     float right = normalizeValue(max);
 
     // In RTL we draw things in reverse, so swap the left and right range values
-    if (ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+    if (isRtl()) {
       return new float[] {right, left};
     } else {
       return new float[] {left, right};
@@ -1389,7 +1389,7 @@ abstract class BaseSlider<
    */
   private float normalizeValue(float value) {
     float normalized = (value - valueFrom) / (valueTo - valueFrom);
-    if (ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+    if (isRtl()) {
       return 1 - normalized;
     }
     return normalized;
@@ -1660,7 +1660,7 @@ abstract class BaseSlider<
     double position = snapPosition(touchPosition);
 
     // We might need to invert the touch position to get the correct value.
-    if (ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+    if (isRtl()) {
       position = 1 - position;
     }
     return (float) (position * (valueTo - valueFrom) + valueFrom);
@@ -1830,10 +1830,14 @@ abstract class BaseSlider<
               return moveFocus(-1);
             }
           case KeyEvent.KEYCODE_DPAD_LEFT:
+            moveFocusAbsolute(-1);
+            return true;
           case KeyEvent.KEYCODE_MINUS:
             moveFocus(-1);
             return true;
           case KeyEvent.KEYCODE_DPAD_RIGHT:
+            moveFocusAbsolute(1);
+            return true;
           case KeyEvent.KEYCODE_PLUS:
             moveFocus(1);
             return true;
@@ -1849,9 +1853,6 @@ abstract class BaseSlider<
         isLongPress |= event.isLongPress();
         Float increment = calculateIncrementForKey(keyCode);
         if (increment != null) {
-          if (ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_RTL) {
-            increment = -increment;
-          }
           float clamped =
               MathUtils.clamp(values.get(activeThumbIdx) + increment, valueFrom, valueTo);
           if (snapActiveThumbToValue(clamped)) {
@@ -1912,15 +1913,41 @@ abstract class BaseSlider<
     }
   }
 
+  /**
+   * Attempts to move focus to the <i>left or right</i> of currently focused thumb
+   * and returns whether the focused thumb changed.
+   * @see #moveFocus(int)
+   */
+  private boolean moveFocusAbsolute(int direction) {
+    if (isRtl()) {
+      direction = -direction;
+    }
+    return moveFocus(direction);
+  }
+
+  private boolean isRtl() {
+    return ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_RTL;
+  }
+
   private Float calculateIncrementForKey(int keyCode) {
     // If this is a long press, increase the increment so it will only take around 20 steps.
     // Otherwise choose the smallest valid increment.
     float increment = isLongPress ? calculateStepIncrement(20) : calculateStepIncrement();
     switch (keyCode) {
       case KeyEvent.KEYCODE_DPAD_LEFT:
+        if (isRtl()) {
+          return increment;
+        } else {
+          return -increment;
+        }
       case KeyEvent.KEYCODE_MINUS:
         return -increment;
       case KeyEvent.KEYCODE_DPAD_RIGHT:
+        if (isRtl()) {
+          return -increment;
+        } else {
+          return increment;
+        }
       case KeyEvent.KEYCODE_PLUS:
       case KeyEvent.KEYCODE_EQUALS:
         return increment;
@@ -1967,12 +1994,16 @@ abstract class BaseSlider<
   private void focusThumbOnFocusGained(int direction) {
     switch(direction) {
       case FOCUS_BACKWARD:
-      case FOCUS_LEFT:
         moveFocus(Integer.MAX_VALUE);
         break;
+      case FOCUS_LEFT:
+        moveFocusAbsolute(Integer.MAX_VALUE);
+        break;
       case FOCUS_FORWARD:
-      case FOCUS_RIGHT:
         moveFocus(Integer.MIN_VALUE);
+        break;
+      case FOCUS_RIGHT:
+        moveFocusAbsolute(Integer.MIN_VALUE);
         break;
       case FOCUS_UP:
       case FOCUS_DOWN:
