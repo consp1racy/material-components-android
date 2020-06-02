@@ -1860,12 +1860,23 @@ abstract class BaseSlider<
           }
           return true;
         }
-        if (keyCode == KeyEvent.KEYCODE_TAB) {
-          if (event.hasNoModifiers()) {
-            return moveFocus(1);
-          } else if (event.isShiftPressed()) {
-            return moveFocus(-1);
-          }
+        switch (keyCode) {
+          case KeyEvent.KEYCODE_TAB:
+            if (event.hasNoModifiers()) {
+              return moveFocus(1);
+            } else if (event.isShiftPressed()) {
+              return moveFocus(-1);
+            }
+          case KeyEvent.KEYCODE_DPAD_CENTER:
+          case KeyEvent.KEYCODE_ENTER:
+            activeThumbIdx = -1;
+            for (TooltipDrawable label : labels) {
+              ViewUtils.getContentViewOverlay(this).remove(label);
+            }
+            postInvalidate();
+            return true;
+          default:
+            // Nothing to do in this case.
         }
       }
     }
