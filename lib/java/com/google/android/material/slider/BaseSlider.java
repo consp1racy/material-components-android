@@ -1937,7 +1937,7 @@ abstract class BaseSlider<
       for (TooltipDrawable label : labels) {
         ViewUtils.getContentViewOverlay(this).remove(label);
       }
-      accessibilityHelper.requestKeyboardFocusForVirtualView(ExploreByTouchHelper.INVALID_ID);
+      accessibilityHelper.clearKeyboardFocusForVirtualView(focusedThumbIdx);
     } else {
       accessibilityHelper.requestKeyboardFocusForVirtualView(focusedThumbIdx);
     }
