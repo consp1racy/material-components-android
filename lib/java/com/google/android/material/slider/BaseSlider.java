@@ -1825,13 +1825,10 @@ abstract class BaseSlider<
         switch (keyCode) {
           case KeyEvent.KEYCODE_TAB:
             if (event.hasNoModifiers()) {
-              moveFocus(1);
-              return true;
+              return moveFocus(1);
             } else if (event.isShiftPressed()) {
-              moveFocus(-1);
-              return true;
+              return moveFocus(-1);
             }
-            return false;
           case KeyEvent.KEYCODE_DPAD_LEFT:
           case KeyEvent.KEYCODE_MINUS:
             moveFocus(-1);
@@ -1875,14 +1872,26 @@ abstract class BaseSlider<
     return super.onKeyUp(keyCode, event);
   }
 
-  private void moveFocus(int direction) {
+  /**
+   * Attempts to move focus to next or previous thumb and returns whether the focused thumb changed.
+   * If focused thumb didn't change, we're at the view boundary for specified {@code direction}
+   * and focus should be moved to next or previous view instead.
+   */
+  private boolean moveFocus(int direction) {
+    int oldFocusedThumbIdx = focusedThumbIdx;
     focusedThumbIdx += direction;
     focusedThumbIdx = MathUtils.clamp(focusedThumbIdx, 0, values.size() - 1);
-    if (activeThumbIdx != -1) {
-      activeThumbIdx = focusedThumbIdx;
+    if (focusedThumbIdx == oldFocusedThumbIdx) {
+      // Move focus to next or previous view.
+      return false;
+    } else {
+      if (activeThumbIdx != -1) {
+        activeThumbIdx = focusedThumbIdx;
+      }
+      updateHaloHotspot();
+      postInvalidate();
+      return true;
     }
-    updateHaloHotspot();
-    postInvalidate();
   }
 
   private Float calculateIncrementForKey(int keyCode) {
